@@ -1,6 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
+import Qt.labs.platform 1.0
 
 Window {
     visible: true
@@ -91,7 +92,9 @@ Window {
                 anchors.right: parent.right
                 height: 40
                 text: "/tmp"
-                onEditingFinished: fileDownloader.setDownloadUrl(text)
+                onPressed: {
+                    folderDialog.open()
+                }
             }
             Label{
                 id: lblServerState
@@ -158,6 +161,13 @@ Window {
                     z: 10
                 }
             }
+        }
+    }
+    FolderDialog {
+        id: folderDialog
+        folder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+        onFolderChanged: {
+            tfDestinationDir.text = folderDialog.folder.toString().replace("file:///","/")
         }
     }
 }
