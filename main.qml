@@ -5,7 +5,7 @@ import QtQuick.Controls 2.2
 Window {
     visible: true
     width: 640
-    height: 290
+    height: 370
     title: qsTr("File downloader")
     minimumWidth: width
     maximumWidth: width
@@ -32,7 +32,7 @@ Window {
                         height: 30
                         text: "Start"
                         enabled: !fileDownloader.downloadingInProgress
-                        onReleased: fileDownloader.download(tfPath.text)
+                        onReleased: fileDownloader.download(tfFilePath.text, tfDestinationDir.text)
                     }
                     Button{
                         width: 100
@@ -58,16 +58,16 @@ Window {
                 }
             }
             Label{
-                id: lblPath
+                id: lblFileToCopyPath
                 anchors.top: rctButtons.bottom
                 anchors.topMargin: 10
                 anchors.left: parent.left
-                text: "File path: "
+                text: "File to copy path: "
                 color: "#e6dbdb"
             }
             TextField{
-                id: tfPath
-                anchors.top: lblPath.bottom
+                id: tfFilePath
+                anchors.top: lblFileToCopyPath.bottom
                 anchors.topMargin: 10
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -76,8 +76,26 @@ Window {
                 onEditingFinished: fileDownloader.setDownloadUrl(text)
             }
             Label{
+                id: lblDestinationPath
+                anchors.top: tfFilePath.bottom
+                anchors.topMargin: 10
+                anchors.left: parent.left
+                text: "Destination dir path: "
+                color: "#e6dbdb"
+            }
+            TextField{
+                id: tfDestinationDir
+                anchors.top: lblDestinationPath.bottom
+                anchors.topMargin: 10
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 40
+                text: "/tmp"
+                onEditingFinished: fileDownloader.setDownloadUrl(text)
+            }
+            Label{
                 id: lblServerState
-                anchors.top: tfPath.bottom
+                anchors.top: tfDestinationDir.bottom
                 anchors.topMargin: 10
                 anchors.left: parent.left
                 text: "Server accept pause download: " +

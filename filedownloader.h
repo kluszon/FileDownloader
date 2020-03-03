@@ -32,7 +32,7 @@ public:
     explicit FileDownloader(QObject* parent = nullptr);
     ~FileDownloader();
 
-    Q_INVOKABLE void download(QUrl url);            ///< Start download
+    Q_INVOKABLE void download(QUrl url, QString newDestinationPath);            ///< Start download
     Q_INVOKABLE bool pause();                       ///< Pause download
     Q_INVOKABLE void resume();                      ///< Resume download
     Q_INVOKABLE void abort();                       ///< Abort download
@@ -41,6 +41,8 @@ public:
     QString downloadUrl() const;            ///< Get download url
     bool serverAcceptRange() const;         ///< Get server accept range
     bool downloadingInProgress() const;     ///< Downloading in progress
+    QString destinationPath() const;
+    void setDestinationPath(const QString &destinationPath);
 
 public slots:
     void setProgress(float progress);                               ///< Set progress
@@ -76,6 +78,7 @@ private:
     QString m_downloadUrl;                              ///< download url
     QString m_fileName;                                 ///< file name
     bool m_downloadingInProgress;                       ///< downloading in progress
+    QString m_destinationPath;                          ///< destination path
 };
 
 #endif // FILEDOWNLOADER_H

@@ -21,7 +21,8 @@ FileDownloader::FileDownloader(QObject *parent)
       m_progress(0),
       m_downloadUrl(""),
       m_fileName(""),
-      m_downloadingInProgress(false)
+      m_downloadingInProgress(false),
+      m_destinationPath("/tmp")
 {
 }
 
@@ -47,8 +48,9 @@ FileDownloader::~FileDownloader(){
  *
  */
 
-void FileDownloader::download(QUrl url)
+void FileDownloader::download(QUrl url, QString newDestinationPath)
 {
+    setDestinationPath(newDestinationPath);
     setDownloadingInProgress(true);
 
     m_downloadUrl = url.toString();
@@ -178,7 +180,7 @@ void FileDownloader::finishedFirst()
 
     m_networkRequest.setRawHeader("Connection", "Keep-Alive");
     m_networkRequest.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-    m_file = new QFile(m_fileName + ".part");
+    m_file = new QFile(m_destinationPath + QDir::separator() + m_fileName + ".part");
     if (!m_serverAcceptRange)
     {
         m_file->remove();
@@ -350,4 +352,14 @@ void FileDownloader::setDownloadingInProgress(bool downloadingInProgress)
 void FileDownloader::error(QNetworkReply::NetworkError code)
 {
     qDebug() << "Error:"<<code;
+}
+
+QString FileDownloader::destinationPath() const
+{
+    return m_destinationPath;
+}
+
+void FileDownloader::setDestinationPath(const QString &destinationPath)
+{
+    m_destinationPath = destinationPath;
 }
