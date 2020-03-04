@@ -56,6 +56,12 @@ Window {
                         enabled: fileDownloader.downloadingInProgress
                         onReleased: fileDownloader.abort()
                     }
+                    Button{
+                        width: 100
+                        height: 30
+                        text: "Close"
+                        onReleased: close()
+                    }
                 }
             }
             Label{
