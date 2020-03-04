@@ -6,7 +6,7 @@ import Qt.labs.platform 1.0
 Window {
     visible: true
     width: 640
-    height: 370
+    height: 400
     title: qsTr("File downloader")
     minimumWidth: width
     maximumWidth: width
@@ -130,7 +130,7 @@ Window {
                 color: "#e6dbdb"
             }
             ProgressBar{
-                id: control
+                id: pbDownloading
                 anchors.top: lblProgress.bottom
                 anchors.topMargin: 10
                 width: parent.width
@@ -139,17 +139,17 @@ Window {
                 padding: 2
 
                 background: Rectangle {
-                    implicitWidth: control.width
-                    implicitHeight: control.height
+                    implicitWidth: pbDownloading.width
+                    implicitHeight: pbDownloading.height
                     color: "#e6e6e6"
                     radius: 3
                 }
                 contentItem: Item {
-                    implicitWidth: control.width
-                    implicitHeight: control.height
+                    implicitWidth: pbDownloading.width
+                    implicitHeight: pbDownloading.height
 
                     Rectangle {
-                        width: control.visualPosition * parent.width
+                        width: pbDownloading.visualPosition * parent.width
                         height: parent.height
                         radius: 2
                         color: "#17a81a"
@@ -160,6 +160,13 @@ Window {
                     text: Math.round(fileDownloader.progress * 100) / 100 + " %"
                     z: 10
                 }
+            }
+            Label{
+                anchors.top: pbDownloading.bottom
+                anchors.topMargin: 20
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: (fileDownloader.downloadCurrentSize / 1000000).toFixed(2) + "MB / " +
+                      (fileDownloader.downloadTotalSize / 1000000).toFixed(2) + "MB"
             }
         }
     }

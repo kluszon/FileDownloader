@@ -18,15 +18,19 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <QFileInfo>
+#include <QDir>
 
 class FileDownloader : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(float progress READ progress WRITE setProgress NOTIFY progressChanged)     ///< Download progress
+    Q_PROPERTY(float progress READ progress WRITE setProgress NOTIFY progressChanged)                                       ///< Download progress
     Q_PROPERTY(bool downloadingInProgress READ downloadingInProgress WRITE setDownloadingInProgress NOTIFY downloadingInProgressChanged)    ///< Downloading in progress
-    Q_PROPERTY(QString downloadUrl READ downloadUrl WRITE setDownloadUrl NOTIFY downloadUrlChanged)     ///< Download url
+    Q_PROPERTY(QString downloadUrl READ downloadUrl WRITE setDownloadUrl NOTIFY downloadUrlChanged)                         ///< Download url
     Q_PROPERTY(bool serverAcceptRange READ serverAcceptRange WRITE setServerAcceptRange NOTIFY serverAcceptRangeChanged)    ///< Server accept range downlaoding
+    Q_PROPERTY(qint64 downloadTotalSize READ downloadTotalSize WRITE setDownloadTotalSize NOTIFY downloadTotalSizeChanged)
+    Q_PROPERTY(qint64 downloadCurrentSize READ downloadCurrentSize WRITE setDownloadCurrentSize NOTIFY downloadCurrentSizeChanged)
+    Q_PROPERTY(qint64 downloadPauseSize READ downloadPauseSize WRITE setDownloadPauseSize NOTIFY downloadPauseSizeChanged)
 
 public:
     explicit FileDownloader(QObject* parent = nullptr);
@@ -43,6 +47,9 @@ public:
     bool downloadingInProgress() const;     ///< Downloading in progress
     QString destinationPath() const;
     void setDestinationPath(const QString &destinationPath);
+    qint64 downloadTotalSize() const;
+    qint64 downloadCurrentSize() const;
+    qint64 downloadPauseSize() const;
 
 public slots:
     void setProgress(float progress);                               ///< Set progress
@@ -50,6 +57,9 @@ public slots:
     void setDownloadUrl(QString downloadUrl);                       ///< Set download url
     void setServerAcceptRange(bool serverAcceptRange);              ///< Set server accpet range
     void setDownloadingInProgress(bool downloadingInProgress);      ///< Set downloading in progress
+    void setDownloadTotalSize(qint64 downloadTotalSize);
+    void setDownloadCurrentSize(qint64 downloadCurrentSize);
+    void setDownloadPauseSize(qint64 downloadPauseSize);
 
 signals:
     void progressChanged(float progress);                   ///< Progress changed
@@ -57,6 +67,9 @@ signals:
     void downloadCompleted();                               ///< Download completed
     void serverAcceptRangeChanged(bool serverAcceptRange);  ///< Server accept range changed
     void downloadingInProgressChanged(bool downloadingInProgress);  ///< Downloading in progress
+    void downloadTotalSizeChanged(qint64 downloadTotalSize);
+    void downloadCurrentSizeChanged(qint64 downloadCurrentSize);
+    void downloadPauseSizeChanged(qint64 downloadPauseSize);
 
 private slots:
     void finished();            ///< download finished
@@ -70,10 +83,10 @@ private:
     QNetworkReply *m_networkReply;                      ///< network replay
     QFile *m_file;                                      ///< local file
 
-    qint64 m_downloadTotal;                             ///< download total size
+    qint64 m_downloadTotalSize;                         ///< download total size in Byte
     bool m_serverAcceptRange;                           ///< server accept download file from certain byte
-    int m_downloadSize;                                 ///< download size
-    int m_downloadSizeAtPause;                          ///< download size at pause
+    qint64 m_downloadCurrentSize;                       ///< download size in Byte
+    qint64 m_downloadPauseSize;                            ///< download size at pause
     float m_progress;                                   ///< download progress
     QString m_downloadUrl;                              ///< download url
     QString m_fileName;                                 ///< file name

@@ -14,10 +14,10 @@ FileDownloader::FileDownloader(QObject *parent)
       m_networkAccessManager(NULL),
       m_networkReply(NULL),
       m_file(NULL),
-      m_downloadTotal(0),
+      m_downloadTotalSize(0),
       m_serverAcceptRange(false),
-      m_downloadSize(0),
-      m_downloadSizeAtPause(0),
+      m_downloadCurrentSize(0),
+      m_downloadPauseSize(0),
       m_progress(0),
       m_downloadUrl(""),
       m_fileName(""),
@@ -58,8 +58,8 @@ void FileDownloader::download(QUrl url, QString newDestinationPath)
         QFileInfo fileInfo(url.toString());
         m_fileName = fileInfo.fileName();
     }
-    m_downloadSize = 0;
-    m_downloadSizeAtPause = 0;
+    setDownloadCurrentSize(0);
+    setDownloadPauseSize(0);
 
     m_networkAccessManager = new QNetworkAccessManager();
     m_networkRequest = QNetworkRequest(url);
@@ -90,8 +90,8 @@ bool FileDownloader::pause()
     m_networkReply->abort();
     m_file->flush();
     m_networkReply = 0;
-    m_downloadSizeAtPause = m_downloadSize;
-    m_downloadSize = 0;
+    setDownloadPauseSize(m_downloadCurrentSize);
+    setDownloadCurrentSize(0);
 
     return true;
 }
@@ -142,10 +142,10 @@ void FileDownloader::download()
 {
     if (m_serverAcceptRange)
     {
-        QByteArray rangeHeaderValue = "bytes=" + QByteArray::number(m_downloadSizeAtPause) + "-";
-        if (m_downloadTotal > 0)
+        QByteArray rangeHeaderValue = "bytes=" + QByteArray::number(m_downloadPauseSize) + "-";
+        if (m_downloadTotalSize > 0)
         {
-            rangeHeaderValue += QByteArray::number(m_downloadTotal);
+            rangeHeaderValue += QByteArray::number(m_downloadTotalSize);
         }
         m_networkRequest.setRawHeader("Range", rangeHeaderValue);
     }
@@ -174,20 +174,23 @@ void FileDownloader::finishedFirst()
         setServerAcceptRange(qstrAcceptRanges.compare("bytes", Qt::CaseInsensitive) == 0);
     }
 
-    qDebug() << "m_downloadTotal: " << m_downloadTotal;
-
-    m_downloadTotal = m_networkReply->header(QNetworkRequest::ContentLengthHeader).toInt();
+    setDownloadTotalSize(m_networkReply->header(QNetworkRequest::ContentLengthHeader).toInt());
 
     m_networkRequest.setRawHeader("Connection", "Keep-Alive");
     m_networkRequest.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-    m_file = new QFile(m_destinationPath + QDir::separator() + m_fileName + ".part");
+
+    QString newFilePath = m_destinationPath + QDir::separator() + m_fileName + ".part";
+
+    QFile::remove(newFilePath);
+    m_file = new QFile(newFilePath);
+
     if (!m_serverAcceptRange)
     {
         m_file->remove();
     }
     m_file->open(QIODevice::ReadWrite | QIODevice::Append);
 
-    m_downloadSizeAtPause = m_file->size();
+    setDownloadPauseSize(m_file->size());
     download();
 }
 
@@ -201,8 +204,13 @@ void FileDownloader::finishedFirst()
 void FileDownloader::finished()
 {
     m_file->close();
+
     QFile::remove(m_fileName);
-    m_file->rename(m_fileName + ".part", m_fileName);
+
+    QFile::rename(m_destinationPath + QDir::separator() + m_fileName + QString(".part"),
+                  m_destinationPath + QDir::separator() + m_fileName);
+
+
     m_file = NULL;
     m_networkReply->deleteLater();
     m_networkReply = 0;
@@ -221,11 +229,11 @@ void FileDownloader::finished()
 
 void FileDownloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
-    m_downloadSize = m_downloadSizeAtPause + bytesReceived;
+    setDownloadCurrentSize(m_downloadPauseSize + bytesReceived);
 
     m_file->write(m_networkReply->readAll());
 
-    float percentProgress = static_cast<float>((static_cast<float>(m_downloadSizeAtPause + bytesReceived) * 100.0) / static_cast<float>(m_downloadSizeAtPause + bytesTotal));
+    float percentProgress = static_cast<float>((static_cast<float>(m_downloadPauseSize + bytesReceived) * 100.0) / static_cast<float>(m_downloadPauseSize + bytesTotal));
 
     setProgress(percentProgress);
 }
@@ -343,6 +351,48 @@ void FileDownloader::setDownloadingInProgress(bool downloadingInProgress)
 }
 
 /*!
+ * \brief FileDownloader::setDownloadTotalSize
+ * \param downloadTotalSize
+ */
+
+void FileDownloader::setDownloadTotalSize(qint64 downloadTotalSize)
+{
+    if (m_downloadTotalSize == downloadTotalSize)
+        return;
+
+    m_downloadTotalSize = downloadTotalSize;
+    emit downloadTotalSizeChanged(m_downloadTotalSize);
+}
+
+/*!
+ * \brief FileDownloader::setDownloadCurrentSize
+ * \param downloadCurrentSize
+ */
+
+void FileDownloader::setDownloadCurrentSize(qint64 downloadCurrentSize)
+{
+    if (m_downloadCurrentSize == downloadCurrentSize)
+        return;
+
+    m_downloadCurrentSize = downloadCurrentSize;
+    emit downloadCurrentSizeChanged(m_downloadCurrentSize);
+}
+
+/*!
+ * \brief FileDownloader::setDownloadPauseSize
+ * \param downloadPauseSize
+ */
+
+void FileDownloader::setDownloadPauseSize(qint64 downloadPauseSize)
+{
+    if (m_downloadPauseSize == downloadPauseSize)
+        return;
+
+    m_downloadPauseSize = downloadPauseSize;
+    emit downloadPauseSizeChanged(m_downloadPauseSize);
+}
+
+/*!
  * \brief Error
  *
  * Debug error.
@@ -354,12 +404,52 @@ void FileDownloader::error(QNetworkReply::NetworkError code)
     qDebug() << "Error:"<<code;
 }
 
+/*!
+ * \brief FileDownloader::destinationPath
+ * \return
+ */
+
 QString FileDownloader::destinationPath() const
 {
     return m_destinationPath;
 }
 
+/*!
+ * \brief FileDownloader::setDestinationPath
+ * \param destinationPath
+ */
+
 void FileDownloader::setDestinationPath(const QString &destinationPath)
 {
     m_destinationPath = destinationPath;
+}
+
+/*!
+ * \brief FileDownloader::downloadTotalSize
+ * \return
+ */
+
+qint64 FileDownloader::downloadTotalSize() const
+{
+    return m_downloadTotalSize;
+}
+
+/*!
+ * \brief FileDownloader::downloadCurrentSize
+ * \return
+ */
+
+qint64 FileDownloader::downloadCurrentSize() const
+{
+    return m_downloadCurrentSize;
+}
+
+/*!
+ * \brief FileDownloader::downloadPauseSize
+ * \return
+ */
+
+qint64 FileDownloader::downloadPauseSize() const
+{
+    return m_downloadPauseSize;
 }
