@@ -11,9 +11,9 @@
 
 FileDownloader::FileDownloader(QObject *parent)
     : QObject(parent),
-      m_networkAccessManager(NULL),
-      m_networkReply(NULL),
-      m_file(NULL),
+      m_networkAccessManager(nullptr),
+      m_networkReply(nullptr),
+      m_file(nullptr),
       m_downloadTotalSize(0),
       m_serverAcceptRange(false),
       m_downloadCurrentSize(0),
@@ -34,7 +34,7 @@ FileDownloader::FileDownloader(QObject *parent)
  */
 
 FileDownloader::~FileDownloader(){
-    if(m_networkReply != NULL){
+    if(m_networkReply != nullptr){
         pause();
     }
 }
@@ -68,7 +68,6 @@ void FileDownloader::download(QUrl url, QString newDestinationPath)
 
     connect(m_networkReply, SIGNAL(finished()), this, SLOT(finishedFirst()));
     connect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(error(QNetworkReply::NetworkError)));
-
 }
 
 /*!
@@ -80,16 +79,19 @@ void FileDownloader::download(QUrl url, QString newDestinationPath)
 
 bool FileDownloader::pause()
 {
-    if( m_networkReply == NULL) {
+    if( m_networkReply == nullptr){
         return true;
     }
+
     disconnect(m_networkReply, SIGNAL(finished()), this, SLOT(finished()));
     disconnect(m_networkReply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(downloadProgress(qint64,qint64)));
     disconnect(m_networkReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(error(QNetworkReply::NetworkError)));
 
     m_networkReply->abort();
     m_file->flush();
-    m_networkReply = 0;
+    QNetworkReply *temporaryRelay = m_networkReply;
+    temporaryRelay->deleteLater();
+    m_networkReply = nullptr;
     setDownloadPauseSize(m_downloadCurrentSize);
     setDownloadCurrentSize(0);
 
@@ -125,7 +127,6 @@ void FileDownloader::abort()
 
     if(pause()){
         setServerAcceptRange(false);
-        m_networkReply->deleteLater();
         m_file->close();
         m_file->remove();
     }
@@ -212,8 +213,9 @@ void FileDownloader::finished()
 
 
     m_file = NULL;
-    m_networkReply->deleteLater();
-    m_networkReply = 0;
+    QNetworkReply *temporaryRelay = m_networkReply;
+    temporaryRelay->deleteLater();
+    m_networkReply = nullptr;
     emit downloadCompleted();
 }
 

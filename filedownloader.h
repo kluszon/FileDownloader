@@ -36,7 +36,7 @@ public:
     explicit FileDownloader(QObject* parent = nullptr);
     ~FileDownloader();
 
-    Q_INVOKABLE void download(QUrl url, QString newDestinationPath);            ///< Start download
+    Q_INVOKABLE void download(QUrl url, QString newDestinationPath);    ///< Start download
     Q_INVOKABLE bool pause();                       ///< Pause download
     Q_INVOKABLE void resume();                      ///< Resume download
     Q_INVOKABLE void abort();                       ///< Abort download
@@ -62,10 +62,10 @@ public slots:
     void setDownloadPauseSize(qint64 downloadPauseSize);            ///< Set download pasue size
 
 signals:
-    void progressChanged(float progress);                   ///< Progress changed
-    void downloadUrlChanged(QString downloadUrl);           ///< Download url changed
-    void downloadCompleted();                               ///< Download completed
-    void serverAcceptRangeChanged(bool serverAcceptRange);  ///< Server accept range changed
+    void progressChanged(float progress);                           ///< Progress changed
+    void downloadUrlChanged(QString downloadUrl);                   ///< Download url changed
+    void downloadCompleted();                                       ///< Download completed
+    void serverAcceptRangeChanged(bool serverAcceptRange);          ///< Server accept range changed
     void downloadingInProgressChanged(bool downloadingInProgress);  ///< Downloading in progress changed
     void downloadTotalSizeChanged(qint64 downloadTotalSize);        ///< Download total size changed
     void downloadCurrentSizeChanged(qint64 downloadCurrentSize);    ///< Download current size changed
