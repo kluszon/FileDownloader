@@ -13,6 +13,8 @@ int main(int argc, char* argv[])
 
     FileDownloader *fileDownloader = new FileDownloader();
 
+    qmlRegisterType<DownloadEnum>("DownloadState", 1, 0, "DownloadState");
+
     engine.rootContext()->setContextProperty("fileDownloader", fileDownloader);
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

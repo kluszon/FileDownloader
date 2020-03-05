@@ -21,8 +21,8 @@ FileDownloader::FileDownloader(QObject *parent)
       m_progress(0),
       m_downloadUrl(""),
       m_fileName(""),
-      m_downloadingInProgress(false),
-      m_destinationPath("/tmp")
+      m_destinationPath("/tmp"),
+      m_state(DownloadEnum::DOWNLOAD_NOT_STARTED)
 {
 }
 
@@ -50,8 +50,8 @@ FileDownloader::~FileDownloader(){
 
 void FileDownloader::download(QUrl url, QString newDestinationPath)
 {
+    setState(DownloadEnum::DOWNLOAD_IN_PROGRESS);
     setDestinationPath(newDestinationPath);
-    setDownloadingInProgress(true);
 
     m_downloadUrl = url.toString();
     {
@@ -79,6 +79,8 @@ void FileDownloader::download(QUrl url, QString newDestinationPath)
 
 bool FileDownloader::pause()
 {
+    setState(DownloadEnum::DOWNLOAD_PAUSED);
+
     if( m_networkReply == nullptr){
         return true;
     }
@@ -107,6 +109,8 @@ bool FileDownloader::pause()
 
 void FileDownloader::resume()
 {
+    setState(DownloadEnum::DOWNLOAD_IN_PROGRESS);
+    setDownloadCurrentSize(m_downloadPauseSize);
     download();
 }
 
@@ -121,7 +125,6 @@ void FileDownloader::resume()
 void FileDownloader::abort()
 {
     setProgress(0.0);
-    setDownloadingInProgress(false);
 
     if(!m_networkReply) return;
 
@@ -130,6 +133,8 @@ void FileDownloader::abort()
         m_file->close();
         m_file->remove();
     }
+
+    setState(DownloadEnum::DOWNLOAD_ABORTED);
 }
 
 /*!
@@ -216,6 +221,8 @@ void FileDownloader::finished()
     QNetworkReply *temporaryRelay = m_networkReply;
     temporaryRelay->deleteLater();
     m_networkReply = nullptr;
+    setState(DownloadEnum::DOWNLOAD_FINISHED);
+
     emit downloadCompleted();
 }
 
@@ -277,18 +284,6 @@ bool FileDownloader::serverAcceptRange() const
 }
 
 /*!
- * \brief Downloading in progress
- *
- * Downloading in progress
- *
- */
-
-bool FileDownloader::downloadingInProgress() const
-{
-    return m_downloadingInProgress;
-}
-
-/*!
  * \brief Set progress
  *
  * Set progress.
@@ -337,22 +332,6 @@ void FileDownloader::setServerAcceptRange(bool serverAcceptRange)
 }
 
 /*!
- * \brief Set downloading in progress
- *
- * Set downloading in progress
- *
- */
-
-void FileDownloader::setDownloadingInProgress(bool downloadingInProgress)
-{
-    if (m_downloadingInProgress == downloadingInProgress)
-        return;
-
-    m_downloadingInProgress = downloadingInProgress;
-    emit downloadingInProgressChanged(m_downloadingInProgress);
-}
-
-/*!
  * \brief FileDownloader::setDownloadTotalSize
  * \param downloadTotalSize
  */
@@ -392,6 +371,20 @@ void FileDownloader::setDownloadPauseSize(qint64 downloadPauseSize)
 
     m_downloadPauseSize = downloadPauseSize;
     emit downloadPauseSizeChanged(m_downloadPauseSize);
+}
+
+/*!
+ * \brief FileDownloader::setState
+ * \param state
+ */
+
+void FileDownloader::setState(DownloadEnum::DownloadState state)
+{
+    if (m_state == state)
+        return;
+
+    m_state = state;
+    emit stateChanged(m_state);
 }
 
 /*!
@@ -454,4 +447,14 @@ qint64 FileDownloader::downloadCurrentSize() const
 qint64 FileDownloader::downloadPauseSize() const
 {
     return m_downloadPauseSize;
+}
+
+/*!
+ * \brief FileDownloader::state
+ * \return
+ */
+
+DownloadEnum::DownloadState FileDownloader::state() const
+{
+    return m_state;
 }

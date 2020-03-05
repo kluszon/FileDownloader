@@ -20,17 +20,38 @@
 #include <QFileInfo>
 #include <QDir>
 
+/*!
+ * \brief The DownloadEnum class
+ */
+
+class DownloadEnum : public QObject{
+    Q_OBJECT
+public:
+
+    /*!
+     * \brief The DownloadState enum
+     */
+    enum DownloadState{
+        DOWNLOAD_NOT_STARTED = 0,
+        DOWNLOAD_IN_PROGRESS,
+        DOWNLOAD_PAUSED,
+        DOWNLOAD_ABORTED,
+        DOWNLOAD_FINISHED
+    };
+    Q_ENUMS(DownloadState)
+};
+
 class FileDownloader : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(float progress READ progress WRITE setProgress NOTIFY progressChanged)                                               ///< Download progress
-    Q_PROPERTY(bool downloadingInProgress READ downloadingInProgress WRITE setDownloadingInProgress NOTIFY downloadingInProgressChanged)    ///< Downloading in progress
     Q_PROPERTY(QString downloadUrl READ downloadUrl WRITE setDownloadUrl NOTIFY downloadUrlChanged)                                 ///< Download url
     Q_PROPERTY(bool serverAcceptRange READ serverAcceptRange WRITE setServerAcceptRange NOTIFY serverAcceptRangeChanged)            ///< Server accept range downlaoding
     Q_PROPERTY(qint64 downloadTotalSize READ downloadTotalSize WRITE setDownloadTotalSize NOTIFY downloadTotalSizeChanged)          ///< Download total size
     Q_PROPERTY(qint64 downloadCurrentSize READ downloadCurrentSize WRITE setDownloadCurrentSize NOTIFY downloadCurrentSizeChanged)  ///< Download current size
     Q_PROPERTY(qint64 downloadPauseSize READ downloadPauseSize WRITE setDownloadPauseSize NOTIFY downloadPauseSizeChanged)          ///< Download pause size
+    Q_PROPERTY(DownloadEnum::DownloadState state READ state WRITE setState NOTIFY stateChanged)        ///< Download state
 
 public:
     explicit FileDownloader(QObject* parent = nullptr);
@@ -44,22 +65,22 @@ public:
     float progress() const;                 ///< Get progress
     QString downloadUrl() const;            ///< Get download url
     bool serverAcceptRange() const;         ///< Get server accept range
-    bool downloadingInProgress() const;     ///< Downloading in progress
     QString destinationPath() const;        ///< Destination path
     void setDestinationPath(const QString &destinationPath);    ///< Set destination path
     qint64 downloadTotalSize() const;       ///< Download total size
     qint64 downloadCurrentSize() const;     ///< Download current size
     qint64 downloadPauseSize() const;       ///< Download pasue size
+    DownloadEnum::DownloadState state() const;      ///< Download state
 
 public slots:
     void setProgress(float progress);                               ///< Set progress
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal); ///< Download progress from QNetworkRequest
     void setDownloadUrl(QString downloadUrl);                       ///< Set download url
     void setServerAcceptRange(bool serverAcceptRange);              ///< Set server accpet range
-    void setDownloadingInProgress(bool downloadingInProgress);      ///< Set downloading in progress
     void setDownloadTotalSize(qint64 downloadTotalSize);            ///< Set download total size
     void setDownloadCurrentSize(qint64 downloadCurrentSize);        ///< Set download current size
     void setDownloadPauseSize(qint64 downloadPauseSize);            ///< Set download pasue size
+    void setState(DownloadEnum::DownloadState state);               ///< Set download state
 
 signals:
     void progressChanged(float progress);                           ///< Progress changed
@@ -70,6 +91,7 @@ signals:
     void downloadTotalSizeChanged(qint64 downloadTotalSize);        ///< Download total size changed
     void downloadCurrentSizeChanged(qint64 downloadCurrentSize);    ///< Download current size changed
     void downloadPauseSizeChanged(qint64 downloadPauseSize);        ///< Download pasue size changed
+    void stateChanged(DownloadEnum::DownloadState state);           ///< Download state changed
 
 private slots:
     void finished();            ///< download finished
@@ -90,8 +112,8 @@ private:
     float m_progress;                                   ///< download progress
     QString m_downloadUrl;                              ///< download url
     QString m_fileName;                                 ///< file name
-    bool m_downloadingInProgress;                       ///< downloading in progress
     QString m_destinationPath;                          ///< destination path
+    DownloadEnum::DownloadState m_state;                ///< download state
 };
 
 #endif // FILEDOWNLOADER_H

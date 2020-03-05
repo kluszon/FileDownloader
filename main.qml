@@ -2,6 +2,7 @@ import QtQuick 2.9
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.2
 import Qt.labs.platform 1.0
+import DownloadState 1.0
 
 Window {
     visible: true
@@ -32,28 +33,24 @@ Window {
                         width: 100
                         height: 30
                         text: "Start"
-                        enabled: !fileDownloader.downloadingInProgress
+                        enabled: (fileDownloader.state === DownloadState.DOWNLOAD_NOT_STARTED ||
+                                 fileDownloader.state === DownloadState.DOWNLOAD_ABORTED ||
+                                 fileDownloader.state === DownloadState.DOWNLOAD_FINISHED) ? true : false
                         onReleased: fileDownloader.download(tfFilePath.text, tfDestinationDir.text)
                     }
                     Button{
                         width: 100
                         height: 30
-                        text: "Pause"
-                        enabled: fileDownloader.downloadingInProgress
-                        onReleased: fileDownloader.pause()
-                    }
-                    Button{
-                        width: 100
-                        height: 30
-                        text: "Resume"
-                        enabled: fileDownloader.downloadingInProgress
-                        onReleased:  fileDownloader.resume()
+                        text: (fileDownloader.state === DownloadState.DOWNLOAD_IN_PROGRESS) ? "Pause" : "Resume"
+                        enabled: (fileDownloader.state === DownloadState.DOWNLOAD_IN_PROGRESS || fileDownloader.state === DownloadState.DOWNLOAD_PAUSED) ? true : false
+                        onReleased: (fileDownloader.state === DownloadState.DOWNLOAD_IN_PROGRESS) ? fileDownloader.pause() : fileDownloader.resume()
                     }
                     Button{
                         width: 100
                         height: 30
                         text: "Abort"
-                        enabled: fileDownloader.downloadingInProgress
+                        enabled: (fileDownloader.state === DownloadState.DOWNLOAD_IN_PROGRESS ||
+                                  fileDownloader.state === DownloadState.DOWNLOAD_PAUSED) ? true : false
                         onReleased: fileDownloader.abort()
                     }
                     Button{
@@ -163,7 +160,7 @@ Window {
                 }
                 Label{
                     anchors.centerIn: parent
-                    text: Math.round(fileDownloader.progress * 100) / 100 + " %"
+                    text: (fileDownloader.progress).toFixed(2) + " %"
                     z: 10
                 }
             }
@@ -171,8 +168,9 @@ Window {
                 anchors.top: pbDownloading.bottom
                 anchors.topMargin: 20
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: (fileDownloader.downloadCurrentSize / 1000000).toFixed(2) + "MB / " +
-                      (fileDownloader.downloadTotalSize / 1000000).toFixed(2) + "MB"
+                text: (fileDownloader.state === DownloadState.DOWNLOAD_PAUSED ? (fileDownloader.downloadPauseSize / 1000000).toFixed(2) : (fileDownloader.downloadCurrentSize / 1000000).toFixed(2))
+                      + "MB / " +
+                      (fileDownloader.downloadTotalSize / 1000000).toFixed(2) + " MB"
             }
         }
     }
