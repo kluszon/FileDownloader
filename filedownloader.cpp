@@ -42,7 +42,7 @@ FileDownloader::~FileDownloader(){
 /*!
  * \brief Download
  *
- * Start download form url and create connections.
+ * Start download from url and create connections.
  *
  * \param url - QUrl download file url
  *
@@ -120,7 +120,6 @@ void FileDownloader::resume()
  * Abort download, delete QNetworkReplay object, close local file and remove it.
  *
  */
-
 
 void FileDownloader::abort()
 {
