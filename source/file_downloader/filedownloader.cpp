@@ -134,12 +134,22 @@ void FileDownloader::abort()
 {
     setProgress(0.0);
 
-    if(!m_networkReply) return;
+    if(!m_networkReply){
+        if(state() == DownloadEnum::DOWNLOAD_PAUSED){
+            setState(DownloadEnum::DOWNLOAD_ABORTED);
+        }
+        return;
+    };
 
     if(pause()){
         setServerAcceptRange(false);
-        m_file->close();
-        m_file->remove();
+        if(m_file != nullptr) {
+            m_file->close();
+            m_file->remove();
+
+            delete m_file;
+            m_file = nullptr;
+        }
     }
 
     setState(DownloadEnum::DOWNLOAD_ABORTED);
