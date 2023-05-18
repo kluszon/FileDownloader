@@ -7,7 +7,7 @@ Window {
     visible: true
     width: 640
     height: 370
-    title: qsTr("File downloader")
+    title: qsTr("File downloader") + " " + Qt.application.version
     minimumWidth: width
     maximumWidth: width
     minimumHeight: height
