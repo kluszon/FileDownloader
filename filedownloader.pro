@@ -7,11 +7,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        main.cpp \
-        filedownloader.cpp
+        source/main.cpp \
+        source/file_downloader/filedownloader.cpp
 
 HEADERS += \
-        filedownloader.h
+        source/file_downloader/filedownloader.h
 
 RESOURCES += qml.qrc
 

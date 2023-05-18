@@ -3,7 +3,7 @@
 #include <QQmlContext>
 #include <QtNetwork>
 
-#include "filedownloader.h"
+#include "source/file_downloader/filedownloader.h"
 
 int main(int argc, char* argv[])
 {
@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     engine.rootContext()->setContextProperty("fileDownloader", fileDownloader);
 
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
 

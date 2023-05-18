@@ -71,6 +71,15 @@ void FileDownloader::download(QUrl url, QString newDestinationPath)
 }
 
 /*!
+ * \brief FileDownloader::download
+ */
+
+void FileDownloader::download()
+{
+    download(m_downloadUrl, m_destinationPath);
+}
+
+/*!
  * \brief Pause
  *
  * Pause download and close connections. Flush any buffer to file.
@@ -111,7 +120,7 @@ void FileDownloader::resume()
 {
     setState(DownloadEnum::DOWNLOAD_IN_PROGRESS);
     setDownloadCurrentSize(m_downloadPauseSize);
-    download();
+    contineDownload();
 }
 
 /*!
@@ -143,7 +152,7 @@ void FileDownloader::abort()
  *
  */
 
-void FileDownloader::download()
+void FileDownloader::contineDownload()
 {
     if (m_serverAcceptRange)
     {
@@ -196,7 +205,7 @@ void FileDownloader::finishedFirst()
     m_file->open(QIODevice::ReadWrite | QIODevice::Append);
 
     setDownloadPauseSize(m_file->size());
-    download();
+    contineDownload();
 }
 
 /*!
@@ -415,7 +424,12 @@ QString FileDownloader::destinationPath() const
 
 void FileDownloader::setDestinationPath(const QString &destinationPath)
 {
+    if(m_destinationPath == destinationPath)
+        return;
+
     m_destinationPath = destinationPath;
+
+    emit destinationPathChanged();
 }
 
 /*!

@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
+        <file>gui/main.qml</file>
+        <file>gui/window_content/ActionButtonSection.qml</file>
+        <file>gui/window_content/WindowBody.qml</file>
     </qresource>
 </RCC>
