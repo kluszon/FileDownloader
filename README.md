@@ -2,7 +2,7 @@
 
 Qt file downloader base on QNetworkAccessManager give possibility to pause, resume and abord downloading. Interface created in qml. Pausing and continuing downloading is possible when the server supports it.
 
-Qt Version: 5.9.6
+Qt Version: 5.15.2
 
 Project base on:
 
